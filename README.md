@@ -7,7 +7,7 @@ This folder is a starter kit for shared Copilot behavior across projects and cli
 - `.mcp.json` — repository MCP config (auto-discovered by Visual Studio; also keeps portable `mcpServers` format).
 - `mcp.json` — MCP config in `servers` format for IDEs/workflows expecting `mcp.json` file name.
 - `.vscode/mcp.json` — VS Code workspace MCP auto-discovery file.
-- `skills/` — place reusable skill docs/templates here.
+- `skills/` — reusable skill pack (preloaded from `addyosmani/agent-skills`) plus your custom skills.
 
 ## How to use
 1. Copy this folder into a new repository root.

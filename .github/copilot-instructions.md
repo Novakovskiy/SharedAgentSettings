@@ -22,6 +22,11 @@
 - Start required local MCP servers/tools before use and verify they are reachable/responding.
 - If automatic setup fails due to auth, permissions, missing secrets, or policy restrictions, report the exact blocker and the minimal manual step needed.
 
+## Agent skills (auto-use)
+- Automatically discover and use relevant local skills from the repository `skills/` folder.
+- If a user request matches a skill description, invoke that skill before manual implementation.
+- If multiple skills match, pick the most specific one; if no skill matches, proceed with normal workflow.
+
 ## Codebase analysis (graphifyy)
 - Use Graphifyy by default for repository understanding and navigation.
 - Start with Graphify MCP tools (for example graph query/path/explain flows) before broad file scans.
