@@ -44,3 +44,7 @@
 ## Collaboration
 - Ask for clarification when requirements are ambiguous.
 - For risky changes, propose a safer alternative first.
+
+## User project overrides
+- If `.github/user-copilot-instructions.md` exists, read and apply it as additional user-provided project instructions.
+- Treat `.github/user-copilot-instructions.md` as higher-priority guidance that may override behavior defined in this file.
