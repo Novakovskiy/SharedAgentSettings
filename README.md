@@ -4,7 +4,9 @@ This folder is a starter kit for shared Copilot behavior across projects and cli
 
 ## Included files
 - `.github/copilot-instructions.md` — project-level behavior and coding rules.
-- `.mcp.json` — stdio MCP setup for MarkItDown and Graphify.
+- `.mcp.json` — repository MCP config (auto-discovered by Visual Studio; also keeps portable `mcpServers` format).
+- `mcp.json` — MCP config in `servers` format for IDEs/workflows expecting `mcp.json` file name.
+- `.vscode/mcp.json` — VS Code workspace MCP auto-discovery file.
 - `skills/` — place reusable skill docs/templates here.
 
 ## How to use
@@ -16,6 +18,12 @@ This folder is a starter kit for shared Copilot behavior across projects and cli
 4. Add only real MCP servers you actually use.
 5. Tune `copilot-instructions.md` for your team conventions.
 6. Commit these files so Desktop/CLI/IDE clients can share the same baseline.
+
+## IDE auto-discovery MCP files
+- Visual Studio: auto-detects `.mcp.json` in solution/repo root.
+- VS Code: auto-detects `.vscode/mcp.json` in workspace.
+- JetBrains (Copilot MCP setup): uses `mcp.json` format with `servers`.
+- All files point to the same local servers (`graphify`, `markitdown`) and commands.
 
 ## Graphify auto-update (watch)
 - A ready-to-run VS Code task is included: `.vscode/tasks.json` → `Graphify: Watch`.

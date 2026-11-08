@@ -6,6 +6,9 @@ Desktop.ini
 # IDE / Editor
 .idea/
 .vscode/
+!.vscode/
+!.vscode/mcp.json
+!.vscode/tasks.json
 *.code-workspace
 *.suo
 *.user
@@ -63,4 +66,3 @@ coverage/
 .env
 .env.*
 !.env.example
-
