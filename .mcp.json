@@ -1,5 +1,19 @@
 {
   "mcpServers": {
+    "graphify": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "graphifyy",
+        "--with",
+        "mcp",
+        "-m",
+        "graphify.serve",
+        "graphify-out/graph.json"
+      ]
+    },
     "markitdown": {
       "type": "stdio",
       "command": "py",

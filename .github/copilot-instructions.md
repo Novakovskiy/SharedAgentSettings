@@ -22,6 +22,11 @@
 - Start required local MCP servers/tools before use and verify they are reachable/responding.
 - If automatic setup fails due to auth, permissions, missing secrets, or policy restrictions, report the exact blocker and the minimal manual step needed.
 
+## Codebase analysis (graphifyy)
+- Use Graphifyy by default for repository understanding and navigation.
+- Start with Graphify MCP tools (for example graph query/path/explain flows) before broad file scans.
+- Fall back to direct file search/read only when Graphify output is missing, stale, or insufficient for the task.
+
 ## File conversion (markitdown_mcp)
 - Default conversion backend: always use `markitdown_mcp` for supported document formats.
 - Supported extensions for default conversion flow: `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.xls`.
