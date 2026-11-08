@@ -12,8 +12,8 @@ This folder is a starter kit for shared Copilot behavior across projects and cli
 ## How to use
 1. Copy this folder into a new repository root.
 2. Install required tooling:
-   - `py -m pip install markitdown-mcp`
-   - `py -m pip install "graphifyy[mcp,watch]"`
+   - `python -m pip install markitdown-mcp`
+   - `python -m pip install "graphifyy[mcp,watch]"`
 3. Open the project in your IDE and use MCP normally.
 4. Add only real MCP servers you actually use.
 5. Tune `copilot-instructions.md` for your team conventions.
@@ -30,10 +30,10 @@ This folder is a starter kit for shared Copilot behavior across projects and cli
 - It is configured to auto-start on folder open (`runOn: "folderOpen"`).
 - Start it from **Terminal → Run Task → Graphify: Watch**.
 - The task runs:
-  - `py -m graphify watch .`
+  - `python -m graphify watch .`
 - On first launch, VS Code may ask for permission to run automatic tasks in this workspace.
 
 ## Notes
 - Keep secrets out of git; use environment variables or client secret storage.
 - Client support differs by app/version; repo files provide the most portable baseline.
-- This setup uses standard `stdio` transport via `py -m ...` commands (more reliable on Windows PATH) without Docker.
+- This setup uses standard `stdio` transport via `python -m ...` commands without Docker.

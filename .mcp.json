@@ -1,7 +1,7 @@
 {
   "servers": {
     "graphify": {
-      "command": "py",
+      "command": "python",
       "args": [
         "-m",
         "graphify.serve",
@@ -9,7 +9,7 @@
       ]
     },
     "markitdown": {
-      "command": "py",
+      "command": "python",
       "args": [
         "-m",
         "markitdown_mcp"
@@ -19,7 +19,7 @@
   "mcpServers": {
     "graphify": {
       "type": "stdio",
-      "command": "py",
+      "command": "python",
       "args": [
         "-m",
         "graphify.serve",
@@ -28,7 +28,7 @@
     },
     "markitdown": {
       "type": "stdio",
-      "command": "py",
+      "command": "python",
       "args": [
         "-m",
         "markitdown_mcp"

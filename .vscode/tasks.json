@@ -4,7 +4,7 @@
     {
       "label": "Graphify: Watch",
       "type": "shell",
-      "command": "py",
+      "command": "python",
       "args": [
         "-m",
         "graphify",
