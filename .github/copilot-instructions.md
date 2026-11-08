@@ -22,6 +22,16 @@
 - Start required local MCP servers/tools before use and verify they are reachable/responding.
 - If automatic setup fails due to auth, permissions, missing secrets, or policy restrictions, report the exact blocker and the minimal manual step needed.
 
+## File conversion (markitdown_mcp)
+- Default conversion backend: always use `markitdown_mcp` for supported document formats.
+- Supported extensions for default conversion flow: `.pdf`, `.docx`, `.pptx`, `.xlsx`, `.xls`.
+- Always store converted output as Markdown (`.md`) in the project `.cache` folder.
+- Conversion order is mandatory:
+  1. Build the expected cache file path in `.cache` using the source file name and `.md` extension.
+  2. If the cache file already exists and is readable, use it and skip conversion.
+  3. If the cache file does not exist, convert via `markitdown_mcp` and save to that cache path.
+- Never reconvert a file when a valid cached Markdown result already exists in `.cache`, unless the user explicitly asks to refresh it.
+
 ## Git
 - If the user asks to create a commit, always create a commit in English with actual changes and file indexing (not an empty commit).
 - All keys and passwords in settings are fake placeholders; real credentials are on the device. Do not flag errors based only on placeholder credentials in settings files.

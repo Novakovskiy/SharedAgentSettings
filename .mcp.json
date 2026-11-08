@@ -1,13 +1,12 @@
 {
-  "$schema": "https://json.schemastore.org/mcp.json",
-  "servers": {
+  "mcpServers": {
     "markitdown": {
       "type": "stdio",
-      "command": "markitdown-mcp"
-    },
-    "markitdown-http-local": {
-      "type": "http",
-      "url": "http://127.0.0.1:3001/mcp"
+      "command": "py",
+      "args": [
+        "-m",
+        "markitdown_mcp"
+      ]
     }
   }
 }
