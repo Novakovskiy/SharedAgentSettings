@@ -4,11 +4,8 @@
     {
       "label": "Graphify: Watch",
       "type": "shell",
-      "command": "uv",
+      "command": "py",
       "args": [
-        "run",
-        "--with",
-        "graphifyy[watch]",
         "-m",
         "graphify",
         "watch",

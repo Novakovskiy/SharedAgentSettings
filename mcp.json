@@ -1,13 +1,8 @@
 {
   "servers": {
     "graphify": {
-      "command": "uv",
+      "command": "py",
       "args": [
-        "run",
-        "--with",
-        "graphifyy",
-        "--with",
-        "mcp",
         "-m",
         "graphify.serve",
         "graphify-out/graph.json"
