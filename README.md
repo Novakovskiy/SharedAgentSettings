@@ -3,11 +3,10 @@
 This repository is a central source for shared agent instructions and IDE configuration. Instruction sources live under `instructions/`; the generated entry points let compatible clients discover those rules.
 
 ## Instruction sources
-- `instructions/core.md` — shared coding, safety, and quality rules.
-- `instructions/project.md` — repository-specific tooling and conventions.
-- `instructions/providers/copilot.md` — GitHub Copilot-specific behavior.
-- `AGENTS.md` — generated instructions for agents that support the `AGENTS.md` convention.
-- `.github/copilot-instructions.md` — generated instructions for GitHub Copilot clients.
+- `instructions/core.md` — shared coding, safety, quality, and repository rules.
+- `instructions/providers/` — provider-specific rules for Claude Code and OpenAI Codex.
+- `instructions/current-project.md` — project-specific settings, conventions, and decisions, maintained by agents as they are established; it is read last by all agents and takes priority over other instruction files.
+- `AGENTS.md` and `.github/copilot-instructions.md` — generated entry points that direct agents to read `instructions/core.md` first, provider and other instruction files next, and `instructions/current-project.md` last.
 - `scripts/sync_instructions.py` — generates or installs the entry-point files.
 
 Edit the canonical files under `instructions/`, then regenerate the checked-in entry points:
