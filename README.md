@@ -21,7 +21,13 @@ Install the generated files into another project:
 python scripts\sync_instructions.py --target C:\path\to\project
 ```
 
-The script refuses to replace existing unmarked instruction files unless `--force` is provided. Back up or merge any project-specific rules before forcing an overwrite.
+With `--target`, the script installs or updates `AGENTS.md`, `.github/copilot-instructions.md`, the full `instructions/`, `skills/`, and `.claude/` trees, plus `.mcp.json`, `mcp.json`, and `.vscode/mcp.json`. Existing source files are refreshed, and missing files are added. Existing MCP configurations are merged: shared server definitions are updated while target-only servers and settings are preserved.
+
+The script also installs `.vscode/tasks.json`. If the target already has tasks, shared tasks with new labels are appended; target tasks with matching labels are preserved. Other target task settings are kept. An existing `instructions/current-project.md` is preserved because it contains project-specific settings; it is only copied when missing.
+
+Existing generated entry points are refreshed. If either entry point exists without the generator marker, the script stops rather than replacing project-specific content; use `--force` only after backing up or merging those rules.
+
+The script does not copy other IDE settings or project files.
 
 There is no single instruction-file format or global configuration location shared by every IDE and model. These entry points cover clients that recognize `AGENTS.md` or GitHub Copilot instructions. Add a provider-specific adapter when another client requires a different format; keep MCP configuration in the client's expected file and format.
 

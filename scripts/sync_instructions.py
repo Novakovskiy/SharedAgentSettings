@@ -4,8 +4,11 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import json
 from pathlib import Path
 import sys
+from typing import Any
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -28,15 +31,31 @@ def render() -> str:
     )
 
 
-def write_outputs(outputs: dict[Path, str], force: bool) -> None:
-    pending = {}
+def write_outputs(
+    outputs: dict[Path, bytes],
+    force: bool,
+    protected: set[Path],
+    preserved: set[Path],
+) -> None:
+    pending: dict[Path, bytes] = {}
     for path, content in outputs.items():
+        if path in preserved and path.exists():
+            if not path.is_file():
+                raise RuntimeError(f"Cannot preserve non-file output path: {path}")
+            print(f"Preserved: {path}")
+            continue
         if path.exists():
-            existing = path.read_text(encoding="utf-8")
+            if not path.is_file():
+                raise RuntimeError(f"Cannot replace non-file output path: {path}")
+            existing = path.read_bytes()
             if existing == content:
                 print(f"Up to date: {path}")
                 continue
-            if not force and GENERATED_MARKER not in existing:
+            if (
+                path in protected
+                and not force
+                and GENERATED_MARKER.encode("utf-8") not in existing
+            ):
                 raise RuntimeError(
                     f"Refusing to overwrite existing unmarked file: {path}. "
                     "Back it up or rerun with --force to replace it."
@@ -45,13 +64,122 @@ def write_outputs(outputs: dict[Path, str], force: bool) -> None:
 
     for path, content in pending.items():
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8", newline="\n")
+        path.write_bytes(content)
         print(f"Updated: {path}")
+
+
+def collect_files(source: Path, destination: Path) -> dict[Path, bytes]:
+    try:
+        return {
+            destination / path.relative_to(source): path.read_bytes()
+            for path in sorted(source.rglob("*"))
+            if path.is_file()
+        }
+    except OSError as error:
+        raise RuntimeError(f"Cannot collect files from {source}: {error}") from error
+
+
+def read_json_object(path: Path) -> dict[str, Any]:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as error:
+        raise RuntimeError(f"Cannot read valid JSON from {path}: {error}") from error
+    if not isinstance(value, dict):
+        raise RuntimeError(f"Expected a JSON object in {path}")
+    return value
+
+
+def json_bytes(value: dict[str, Any]) -> bytes:
+    return (json.dumps(value, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def merge_source_values(
+    target: dict[str, Any], source: dict[str, Any]
+) -> dict[str, Any]:
+    for key, source_value in source.items():
+        target_value = target.get(key)
+        if isinstance(target_value, dict) and isinstance(source_value, dict):
+            merge_source_values(target_value, source_value)
+        else:
+            target[key] = source_value
+    return target
+
+
+def merge_target_values(
+    target: dict[str, Any], source: dict[str, Any]
+) -> dict[str, Any]:
+    merged = dict(source)
+    for key, target_value in target.items():
+        source_value = merged.get(key)
+        if isinstance(target_value, dict) and isinstance(source_value, dict):
+            merged[key] = merge_target_values(target_value, source_value)
+        else:
+            merged[key] = target_value
+    return merged
+
+
+def merge_mcp_file(source: Path, destination: Path) -> bytes:
+    source_data = read_json_object(source)
+    if not destination.exists():
+        return source.read_bytes()
+    if not destination.is_file():
+        raise RuntimeError(f"Cannot replace non-file MCP configuration: {destination}")
+
+    target_data = read_json_object(destination)
+    original_data = copy.deepcopy(target_data)
+    merged = merge_source_values(target_data, source_data)
+    if merged == original_data:
+        return destination.read_bytes()
+    return json_bytes(merged)
+
+
+def merge_tasks_file(source: Path, destination: Path) -> bytes:
+    source_data = read_json_object(source)
+    source_tasks = source_data.get("tasks", [])
+    if not isinstance(source_tasks, list):
+        raise RuntimeError(f"Expected a tasks array in {source}")
+    if any(not isinstance(task, dict) for task in source_tasks):
+        raise RuntimeError(f"Expected task objects in {source}")
+
+    if not destination.exists():
+        return source.read_bytes()
+    if not destination.is_file():
+        raise RuntimeError(f"Cannot replace non-file tasks configuration: {destination}")
+
+    target_data = read_json_object(destination)
+    target_tasks = target_data.get("tasks", [])
+    if not isinstance(target_tasks, list):
+        raise RuntimeError(f"Expected a tasks array in {destination}")
+    if any(not isinstance(task, dict) for task in target_tasks):
+        raise RuntimeError(f"Expected task objects in {destination}")
+
+    merged = merge_target_values(target_data, source_data)
+    merged_tasks: list[dict[str, Any]] = list(target_tasks)
+    existing_labels = {
+        task["label"] for task in target_tasks if isinstance(task.get("label"), str)
+    }
+    for task in source_tasks:
+        label = task.get("label")
+        if isinstance(label, str):
+            if label in existing_labels:
+                continue
+            existing_labels.add(label)
+        elif task in merged_tasks:
+            continue
+        merged_tasks.append(task)
+    merged["tasks"] = merged_tasks
+
+    if merged == target_data:
+        return destination.read_bytes()
+    return json_bytes(merged)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate instruction entry points that load the canonical files under instructions/."
+        description=(
+            "Install or update agent entry points, instructions, skills, "
+            "Claude settings, MCP configuration, and VS Code tasks."
+        )
     )
     parser.add_argument(
         "--target",
@@ -62,18 +190,37 @@ def main() -> int:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="Replace existing instruction files, including unmarked project files.",
+        help="Replace existing unmarked AGENTS.md or Copilot instruction files.",
     )
     args = parser.parse_args()
     target = args.target.expanduser().resolve()
 
     try:
+        outputs = {}
+        outputs.update(collect_files(ROOT / "instructions", target / "instructions"))
+        outputs.update(collect_files(ROOT / "skills", target / "skills"))
+        outputs.update(collect_files(ROOT / ".claude", target / ".claude"))
+
+        agents_file = target / "AGENTS.md"
+        copilot_file = target / ".github" / "copilot-instructions.md"
+        outputs[agents_file] = render().encode("utf-8")
+        outputs[copilot_file] = render().encode("utf-8")
+
+        for relative_path in (".mcp.json", "mcp.json", ".vscode/mcp.json"):
+            source = ROOT / relative_path
+            destination = target / relative_path
+            outputs[destination] = merge_mcp_file(source, destination)
+
+        source_tasks = ROOT / ".vscode" / "tasks.json"
+        target_tasks = target / ".vscode" / "tasks.json"
+        outputs[target_tasks] = merge_tasks_file(source_tasks, target_tasks)
+
+        current_project_file = target / "instructions" / "current-project.md"
         write_outputs(
-            {
-                target / "AGENTS.md": render(),
-                target / ".github" / "copilot-instructions.md": render(),
-            },
+            outputs,
             args.force,
+            protected={agents_file, copilot_file},
+            preserved={current_project_file},
         )
     except (OSError, RuntimeError) as error:
         print(f"Error: {error}", file=sys.stderr)
