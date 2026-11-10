@@ -1,39 +1,43 @@
-# Copilot Base Settings
+# Shared Agent Settings
 
-This folder is a starter kit for shared Copilot behavior across projects and clients.
+This repository is a central source for shared agent instructions and IDE configuration. Instruction sources live under `instructions/`; the generated entry points let compatible clients discover those rules.
 
-## Included files
-- `.github/copilot-instructions.md` — project-level behavior and coding rules.
-- `.mcp.json` — repository MCP config (auto-discovered by Visual Studio; also keeps portable `mcpServers` format).
-- `mcp.json` — MCP config in `servers` format for IDEs/workflows expecting `mcp.json` file name.
-- `.vscode/mcp.json` — VS Code workspace MCP auto-discovery file.
-- `skills/` — reusable skill pack (preloaded from `addyosmani/agent-skills`) plus your custom skills.
+## Instruction sources
+- `instructions/core.md` — shared coding, safety, and quality rules.
+- `instructions/project.md` — repository-specific tooling and conventions.
+- `instructions/providers/copilot.md` — GitHub Copilot-specific behavior.
+- `AGENTS.md` — generated instructions for agents that support the `AGENTS.md` convention.
+- `.github/copilot-instructions.md` — generated instructions for GitHub Copilot clients.
+- `scripts/sync_instructions.py` — generates or installs the entry-point files.
 
-## How to use
-1. Copy this folder into a new repository root.
-2. Install required tooling:
+Edit the canonical files under `instructions/`, then regenerate the checked-in entry points:
+
+```powershell
+python scripts\sync_instructions.py
+```
+
+Install the generated files into another project:
+
+```powershell
+python scripts\sync_instructions.py --target C:\path\to\project
+```
+
+The script refuses to replace existing unmarked instruction files unless `--force` is provided. Back up or merge any project-specific rules before forcing an overwrite.
+
+There is no single instruction-file format or global configuration location shared by every IDE and model. These entry points cover clients that recognize `AGENTS.md` or GitHub Copilot instructions. Add a provider-specific adapter when another client requires a different format; keep MCP configuration in the client's expected file and format.
+
+## IDE configuration
+- `.mcp.json` — repository MCP configuration, including a portable `mcpServers` format.
+- `mcp.json` — MCP configuration for IDEs or workflows expecting that filename and `servers` format.
+- `.vscode/mcp.json` — VS Code workspace MCP configuration.
+- `skills/` — reusable skills available to compatible agent clients.
+
+The MCP files point to the same local servers (`graphify` and `markitdown`) using standard `stdio` transport. Add only servers you use and keep secrets out of the repository.
+
+## Initial setup
+1. Install required tooling:
    - `python -m pip install markitdown-mcp`
    - `python -m pip install "graphifyy[mcp,watch]"`
-3. Open the project in your IDE and use MCP normally.
-4. Add only real MCP servers you actually use.
-5. Tune `copilot-instructions.md` for your team conventions.
-6. Commit these files so Desktop/CLI/IDE clients can share the same baseline.
-
-## IDE auto-discovery MCP files
-- Visual Studio: auto-detects `.mcp.json` in solution/repo root.
-- VS Code: auto-detects `.vscode/mcp.json` in workspace.
-- JetBrains (Copilot MCP setup): uses `mcp.json` format with `servers`.
-- All files point to the same local servers (`graphify`, `markitdown`) and commands.
-
-## Graphify auto-update (watch)
-- A ready-to-run VS Code task is included: `.vscode/tasks.json` → `Graphify: Watch`.
-- It is configured to auto-start on folder open (`runOn: "folderOpen"`).
-- Start it from **Terminal → Run Task → Graphify: Watch**.
-- The task runs:
-  - `python -m graphify watch .`
-- On first launch, VS Code may ask for permission to run automatic tasks in this workspace.
-
-## Notes
-- Keep secrets out of git; use environment variables or client secret storage.
-- Client support differs by app/version; repo files provide the most portable baseline.
-- This setup uses standard `stdio` transport via `python -m ...` commands without Docker.
+2. Open the project in your IDE and configure or enable its MCP integration.
+3. Use **Terminal → Run Task → Graphify: Watch** in VS Code to start the included graph watcher. It is configured to run on folder open; VS Code may first ask permission for automatic tasks.
+4. Commit the canonical instruction sources and generated entry points so the baseline stays versioned.
